@@ -1,5 +1,7 @@
 # dockerfile
-Docker File for some project
+My Docker playground
+
+Docker File for some of my project
 
 - choose folder
 - cd folder 
