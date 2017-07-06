@@ -1,0 +1,86 @@
+version: '2'
+services:
+  elasticsearch1:
+    image: elasticsearch:2.4.4
+    container_name: elasticsearch1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    mem_limit: 1g
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - esdata1:/usr/local/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+  elasticsearch2:
+    image: elasticsearch:2.4.4
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch1"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    mem_limit: 1g
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - esdata2:/usr/local/elasticsearch/data
+    networks:
+      - esnet
+  #kibana:
+  #  image: docker.elastic.co/kibana/kibana:5.4.3
+  #  container_name: kibana1
+  #  volumes:
+  #    - kibanaconfig:/usr/share/kibana/config
+  #  environment:
+  #    - "ELASTICSEARCH_USERNAME=elastic"
+  #    - "ELASTICSEARCH_PASSWORD=changeme"
+  #    - "SERVER_NAME=elasticsearch"
+  #    - "ELASTICSEARCH_URL=http://elasticsearch:9200"
+  #    - "XPACK_SECURITY_ENABLED=false"
+  #  ports:
+  #    - 5601:5601
+  #  networks:
+  #    - kibananet
+  solr:
+    image: solr
+    ports:
+     - "8983:8983"
+    volumes:
+      - solrdata:/opt/solr/server/solr/mycores
+    entrypoint:
+      - docker-entrypoint.sh
+      - solr-precreate
+      - mycore
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+  solrdata:
+    driver: local
+  #kibanaconfig:
+  #  driver: local
+
+networks:
+  esnet:
+    driver: bridge
+  #kibananet:
+  #  driver: bridge
